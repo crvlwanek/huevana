@@ -152,7 +152,7 @@ export default function Index() {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="grid gap-4 place-items-center bg-slate-50 p-8 rounded-3xl bg-opacity-60">
+      <div className="grid gap-4 place-items-center bg-slate-50 p-8 rounded-3xl">
         <h1 className="text-4xl">Huevana</h1>
         <div className="grid grid-flow-col shadow-sm">
           <input
@@ -167,10 +167,10 @@ export default function Index() {
           <label
             htmlFor="hex"
             className={
-              "cursor-pointer px-4 py-1 rounded-l-md" +
+              "cursor-pointer px-4 py-1 rounded-l-2xl font-bold" +
               (colorFormat === "hex"
-                ? " bg-blue-100 font-bold text-blue-600 outline outline-blue-600 outline-1 z-10"
-                : "  bg-slate-100 outline outline-slate-200 outline-1")
+                ? " bg-blue-100  text-blue-600 outline outline-slate-600 outline-1 z-10"
+                : "  bg-slate-100 outline outline-slate-600 outline-1 text-slate-600")
             }
           >
             Hex
@@ -187,17 +187,17 @@ export default function Index() {
           <label
             htmlFor="rgb"
             className={
-              "cursor-pointer px-4 py-1 rounded-r-md" +
+              "cursor-pointer px-4 py-1 rounded-r-2xl font-bold" +
               (colorFormat === "rgb"
-                ? " bg-blue-100 font-bold text-blue-600 outline outline-blue-600 outline-1 z-10"
-                : " bg-slate-100 outline outline-slate-200 outline-1")
+                ? " bg-blue-100 font-bold text-blue-600 outline outline-slate-600 outline-1 z-10"
+                : " bg-slate-100 outline outline-slate-600 outline-1 text-slate-600")
             }
           >
             RGB
           </label>
         </div>
         <div className="grid grid-flow-col items-center shadow-sm gap-[1px]">
-          <div className="h-10 w-10 overflow-hidden rounded-l-md outline-1 outline-slate-700 outline">
+          <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-black/10 border-off mr-2">
             <input
               type="color"
               value={color}
@@ -210,18 +210,18 @@ export default function Index() {
             value={inputTextColor}
             onChange={onColorTextChanged}
             spellCheck={false}
-            className="outline-1 outline-slate-700 outline p-2 focus-within:outline-blue-600 focus-within:outline-2 focus-within:z-10 pl-4 max-w-[180px]"
+            className="outline-1 outline-slate-700 outline p-2 rounded-l-2xl focus-within:outline-blue-600 focus-within:outline-2 focus-within:z-10 pl-4 max-w-[180px] bg-transparent"
           />
           <button
             disabled={!isValidColor}
-            className="px-4 py-2 bg-slate-200 outline-1 outline-slate-700 outline rounded-r-md focus-within:outline-blue-600 focus-within:outline-2 disabled:bg-slate-50"
+            className="px-4 py-2 bg-slate-200 outline-1 outline-slate-700 outline rounded-r-2xl focus-within:outline-blue-600 focus-within:outline-2 disabled:bg-slate-50"
           >
             Submit
           </button>
         </div>
         <button
           onClick={onRandomizeColor}
-          className="px-4 py-2 bg-purple-500 text-white rounded-md fill-white flex items-center gap-1 shadow-sm"
+          className="px-4 py-2 bg-purple-500 text-white rounded-2xl fill-white flex items-center gap-1 shadow-sm"
         >
           <DiceIcon />
           <span>Randomize</span>
