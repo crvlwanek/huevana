@@ -152,8 +152,8 @@ export default function Index() {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="grid gap-4 place-items-center bg-slate-50 p-8 rounded-3xl">
-        <h1 className="text-4xl">Huevana</h1>
+      <div className="grid gap-4 place-items-center bg-slate-50 p-10 rounded-3xl">
+        <h1 className="text-4xl mb-6">Huevana</h1>
         <div className="grid grid-flow-col shadow-sm">
           <input
             type="radio"
@@ -167,10 +167,10 @@ export default function Index() {
           <label
             htmlFor="hex"
             className={
-              "cursor-pointer px-4 py-1 rounded-l-2xl font-bold" +
+              "cursor-pointer px-4 py-1 rounded-l-2xl font-semibold outline-slate-700/20 text-sm" +
               (colorFormat === "hex"
-                ? " bg-blue-100  text-blue-600 outline outline-slate-600 outline-1 z-10"
-                : "  bg-slate-100 outline outline-slate-600 outline-1 text-slate-600")
+                ? " bg-blue-100  text-blue-600 outline outline-1 z-10"
+                : "  bg-slate-100 outline outline-1 text-slate-600")
             }
           >
             Hex
@@ -187,22 +187,22 @@ export default function Index() {
           <label
             htmlFor="rgb"
             className={
-              "cursor-pointer px-4 py-1 rounded-r-2xl font-bold" +
+              "cursor-pointer px-4 py-1 rounded-r-2xl font-semibold outline-slate-700/20 text-sm" +
               (colorFormat === "rgb"
-                ? " bg-blue-100 font-bold text-blue-600 outline outline-slate-600 outline-1 z-10"
-                : " bg-slate-100 outline outline-slate-600 outline-1 text-slate-600")
+                ? " bg-blue-100 font-bold text-blue-600 outline outline-slate-700/20 outline-1 z-10"
+                : " bg-slate-100 outline outline-1 text-slate-600")
             }
           >
             RGB
           </label>
         </div>
         <div className="grid grid-flow-col items-center gap-[1px]">
-          <div className="h-10 w-10 overflow-hidden rounded-full shadow-inner mr-2">
+          <div className="h-8 w-8 overflow-hidden rounded-full mr-2 shadow-[inset_0_0_0_5px_rgba(0,0,0,0.3)]">
             <input
               type="color"
               value={color}
               onChange={onColorInputChanged}
-              className="h-10 w-10 scale-[2]"
+              className="h-10 w-10 scale-[2] cursor-pointer"
             />
           </div>
           <input
@@ -210,18 +210,18 @@ export default function Index() {
             value={inputTextColor}
             onChange={onColorTextChanged}
             spellCheck={false}
-            className="outline-1 outline-slate-700 outline p-2 rounded-l-2xl focus-within:outline-blue-600 focus-within:outline-2 focus-within:z-10 pl-4 max-w-[180px] bg-transparent"
+            className="outline-1 outline-slate-700/20 text-slate-700 font-bold outline p-2 rounded-2xl focus-within:outline-blue-600 focus-within:outline-2 focus-within:z-10 pl-4 max-w-[200px] bg-transparent"
           />
-          <button
-            disabled={!isValidColor}
-            className="px-4 py-2 bg-slate-200 outline-1 outline-slate-700 outline rounded-r-2xl focus-within:outline-blue-600 focus-within:outline-2 disabled:bg-slate-50"
-          >
-            Submit
-          </button>
         </div>
         <button
+          disabled={!isValidColor}
+          className="px-4 py-2 bg-blue-500 text-white rounded-2xl focus-within:outline-blue-600 focus-within:outline-2 disabled:bg-slate-50 font-semibold place-self-stretch"
+        >
+          Submit
+        </button>
+        <button
           onClick={onRandomizeColor}
-          className="px-4 py-2 bg-purple-500 text-white rounded-2xl fill-white flex items-center gap-1 shadow-sm"
+          className="px-4 py-2 bg-slate-200 text-slate-700 rounded-2xl fill-slate-700 flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch focus-within:outline-blue-600 focus-within:outline-2"
         >
           <DiceIcon />
           <span>Randomize</span>
