@@ -196,7 +196,7 @@ export default function Index() {
             RGB
           </label>
         </div>
-        <div className="grid grid-flow-col items-center shadow-sm">
+        <div className="grid grid-flow-col items-center shadow-sm gap-[1px]">
           <div className="h-10 w-10 overflow-hidden rounded-l-md outline-1 outline-slate-700 outline">
             <input
               type="color"
@@ -210,7 +210,7 @@ export default function Index() {
             value={inputTextColor}
             onChange={onColorTextChanged}
             spellCheck={false}
-            className="outline-1 outline-slate-700 outline  p-2 border-r-transparent focus-within:outline-blue-600 focus-within:outline-2 pl-4"
+            className="outline-1 outline-slate-700 outline p-2 focus-within:outline-blue-600 focus-within:outline-2 focus-within:z-10 pl-4"
           />
           <button
             disabled={!isValidColor}
