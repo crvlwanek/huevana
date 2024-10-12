@@ -1,6 +1,7 @@
 import type { MetaFunction } from "@remix-run/node";
 import { isRouteErrorResponse, useRouteError } from "@remix-run/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import DiceIcon from "~/svg/DiceIcon";
 
 export const meta: MetaFunction = () => {
   return [
@@ -87,6 +88,11 @@ const tryParseInputColor = (color: string): string | undefined => {
   return tryParseRGBColor(color);
 };
 
+const getRandomHexColor = (): string => {
+  const number = Math.round(Math.random() * 255);
+  return number.toString(16).padStart(2, "0");
+};
+
 export default function Index() {
   const [inputTextColor, setInputTextColor] = useState(DEFAULT_COLOR);
   const [color, setColor] = useState(DEFAULT_COLOR);
@@ -103,6 +109,8 @@ export default function Index() {
       const parsedColor = tryParseInputColor(value);
       if (!parsedColor) return;
       setColor(parsedColor);
+      if (isValidHex(parsedColor)) setColorFormat("hex");
+      else setColorFormat("rgb");
     },
     []
   );
@@ -130,38 +138,72 @@ export default function Index() {
     [color]
   );
 
+  const onRandomizeColor = useCallback(() => {
+    const r = getRandomHexColor();
+    const g = getRandomHexColor();
+    const b = getRandomHexColor();
+
+    const newColor = `#${r}${g}${b}`;
+    const newInputTextColor =
+      colorFormat === "hex" ? newColor : hexToRgb(newColor);
+    setInputTextColor(newInputTextColor);
+    setColor(newColor);
+  }, [colorFormat]);
+
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="grid gap-4 place-items-center bg-slate-50 p-8 rounded-3xl">
+      <div className="grid gap-4 place-items-center bg-slate-50 p-8 rounded-3xl bg-opacity-60">
         <h1 className="text-4xl">Huevana</h1>
-        <div className="grid gap-2 grid-flow-col">
+        <div className="grid grid-flow-col shadow-sm">
           <input
             type="radio"
             id="hex"
             name="hex"
             value="hex"
+            className="hidden"
             checked={colorFormat === "hex"}
             onChange={onColorFormatChanged}
           />
-          <label htmlFor="hex">Hex</label>
+          <label
+            htmlFor="hex"
+            className={
+              "cursor-pointer px-4 py-1 rounded-l-md" +
+              (colorFormat === "hex"
+                ? " bg-blue-100 font-bold text-blue-600 outline outline-blue-600 outline-1 z-10"
+                : "  bg-slate-100 outline outline-slate-200 outline-1")
+            }
+          >
+            Hex
+          </label>
           <input
             type="radio"
             id="rgb"
             name="rgb"
             value="rgb"
+            className="hidden"
             checked={colorFormat === "rgb"}
             onChange={onColorFormatChanged}
           />
-          <label htmlFor="rgb">RGB</label>
+          <label
+            htmlFor="rgb"
+            className={
+              "cursor-pointer px-4 py-1 rounded-r-md" +
+              (colorFormat === "rgb"
+                ? " bg-blue-100 font-bold text-blue-600 outline outline-blue-600 outline-1 z-10"
+                : " bg-slate-100 outline outline-slate-200 outline-1")
+            }
+          >
+            RGB
+          </label>
         </div>
         <div className="grid grid-flow-col items-center gap-4">
           <input
             type="color"
             value={color}
             onChange={onColorInputChanged}
-            className="h-12 w-12"
+            className="h-12 w-12 shadow-sm"
           />
-          <div>
+          <div className="shadow-sm">
             <input
               type="text"
               value={inputTextColor}
@@ -177,8 +219,15 @@ export default function Index() {
             </button>
           </div>
         </div>
-        <button>Randomize</button>
-        <div>{colorName}</div>
+        <button
+          onClick={onRandomizeColor}
+          className="px-4 py-2 bg-purple-500 text-white rounded-md fill-white flex items-center gap-1 shadow-sm"
+        >
+          <DiceIcon />
+          <span>Randomize</span>
+        </button>
+        {/* TODO: Add color name */}
+        {/*<div>{colorName}</div>*/}
       </div>
     </div>
   );
