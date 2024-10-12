@@ -210,7 +210,7 @@ export default function Index() {
             value={inputTextColor}
             onChange={onColorTextChanged}
             spellCheck={false}
-            className="outline-1 outline-slate-700 outline p-2 focus-within:outline-blue-600 focus-within:outline-2 focus-within:z-10 pl-4"
+            className="outline-1 outline-slate-700 outline p-2 focus-within:outline-blue-600 focus-within:outline-2 focus-within:z-10 pl-4 max-w-[180px]"
           />
           <button
             disabled={!isValidColor}
