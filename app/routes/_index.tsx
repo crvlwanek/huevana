@@ -196,13 +196,13 @@ export default function Index() {
             RGB
           </label>
         </div>
-        <div className="grid grid-flow-col items-center shadow-sm gap-[1px]">
-          <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-black/10 border-off mr-2">
+        <div className="grid grid-flow-col items-center gap-[1px]">
+          <div className="h-10 w-10 overflow-hidden rounded-full shadow-inner mr-2">
             <input
               type="color"
               value={color}
               onChange={onColorInputChanged}
-              className="h-10 w-10 shadow-sm scale-[2]"
+              className="h-10 w-10 scale-[2]"
             />
           </div>
           <input
