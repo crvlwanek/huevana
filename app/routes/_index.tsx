@@ -109,7 +109,7 @@ export default function Index() {
       const parsedColor = tryParseInputColor(value);
       if (!parsedColor) return;
       setColor(parsedColor);
-      if (isValidHex(parsedColor)) setColorFormat("hex");
+      if (isValidHex(value)) setColorFormat("hex");
       else setColorFormat("rgb");
     },
     []
