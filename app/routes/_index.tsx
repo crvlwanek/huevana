@@ -1,6 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
 import { isRouteErrorResponse, useRouteError } from "@remix-run/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -12,69 +12,172 @@ export const meta: MetaFunction = () => {
 const DEFAULT_COLOR = "#98FB98";
 const colorName = "Minty green";
 
+/** Determines if the given string is a valid hex or RGB color */
 const isValidHexOrRGB = (color: string): boolean => {
-  // Don't care about whitespace or case sensitivity
   color = color.trim().toLowerCase();
   const isProbablyHex = color.startsWith("#");
   if (isProbablyHex) return isValidHex(color);
 
-  const isProbablyRGB = color.startsWith("rgb");
+  const isProbablyRGB = color.startsWith("r");
   if (isProbablyRGB) return isValidRGB(color);
 
   // No other formats supported, yet...
   return false;
 };
 
+/** Determines if the given string is a valid hex color */
 const isValidHex = (color: string): boolean => {
   // https://regex101.com/ - If this ever stops working...
   const regex = new RegExp(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/);
   return regex.test(color); // Trust the regex magic
 };
 
+/** Determines if the given string is a valid RGB color */
 const isValidRGB = (color: string): boolean => {
   // https://regex101.com/ - If this ever stops working...
   const regex = new RegExp(/^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/);
   const matches = color.match(regex);
-  if (!matches) return false;
-  const [r, g, b] = matches;
+  if (matches?.length !== 4) return false;
+  const [_, r, g, b] = matches;
   return +r < 256 && +g < 256 && +b < 256;
 };
 
+const tryParseRGBColor = (color: string): string | undefined => {
+  // https://regex101.com/ - If this ever stops working...
+  const regex = new RegExp(/^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/);
+  const matches = color.match(regex);
+  if (matches?.length !== 4) return undefined;
+
+  const [_, r, g, b] = matches;
+  if (+r > 255 || +g > 255 || +b > 255) return undefined;
+
+  return rgbToHex(+r, +g, +b);
+};
+
+const rgbToHex = (r: number, g: number, b: number): string => {
+  return `#${r.toString(16).padStart(2, "0")}${g
+    .toString(16)
+    .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+};
+
+const hexToRgb = (hex: string): string => {
+  const chars = hex.split("");
+  if (chars.length === 4) {
+    const [_, r, g, b] = chars;
+    return `rgb(${parseInt(r + r, 16)}, ${parseInt(g + g, 16)}, ${parseInt(
+      b + b,
+      16
+    )})`;
+  }
+
+  if (chars.length !== 7) throw new Error(`Incorrect hex string: ${hex}`);
+
+  const [_, r1, r2, g1, g2, b1, b2] = chars;
+  return `rgb(${parseInt(r1 + r2, 16)}, ${parseInt(g1 + g2, 16)}, ${parseInt(
+    b1 + b2,
+    16
+  )})`;
+};
+
+const tryParseInputColor = (color: string): string | undefined => {
+  color = color.trim();
+  // If it's a hex just return it
+  if (isValidHex(color)) return color;
+  // No other formats supported for now
+  return tryParseRGBColor(color);
+};
+
 export default function Index() {
+  const [inputTextColor, setInputTextColor] = useState(DEFAULT_COLOR);
   const [color, setColor] = useState(DEFAULT_COLOR);
-  const isValidColor = useMemo(() => isValidHexOrRGB(color), [color]);
+  const [colorFormat, setColorFormat] = useState<"hex" | "rgb">("hex");
+  const isValidColor = useMemo(
+    () => isValidHexOrRGB(inputTextColor),
+    [inputTextColor]
+  );
 
-  const onColorChange = useCallback(
+  const onColorTextChanged = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const newColor = event.target.value;
-      if (!isValidHexOrRGB(newColor)) {
-        //return;
-      }
-
-      setColor(newColor);
+      const { value } = event.target;
+      setInputTextColor(value);
+      const parsedColor = tryParseInputColor(value);
+      if (!parsedColor) return;
+      setColor(parsedColor);
     },
     []
   );
 
+  const onColorInputChanged = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const { value } = event.target;
+      const newInputTextColor = colorFormat === "hex" ? value : hexToRgb(value);
+      setInputTextColor(newInputTextColor);
+      setColor(value);
+    },
+    [colorFormat]
+  );
+
+  const onColorFormatChanged = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const { value } = event.target;
+      const isRGB = value === "rgb";
+      const isHex = value === "hex";
+      if (!isRGB && !isHex) return;
+      const newInputTextColor = isHex ? color : hexToRgb(color);
+      setInputTextColor(newInputTextColor);
+      setColorFormat(value);
+    },
+    [color]
+  );
+
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="grid gap-4 place-items-center">
+      <div className="grid gap-4 place-items-center bg-slate-50 p-8 rounded-3xl">
         <h1 className="text-4xl">Huevana</h1>
-        <input type="color" value={color} onChange={onColorChange} />
-        <div>
+        <div className="grid gap-2 grid-flow-col">
           <input
-            type="text"
-            value={color}
-            onChange={onColorChange}
-            className="outline-1 outline-slate-700 outline rounded-l-md p-2 border-r-transparent focus-within:outline-blue-600 focus-within:outline-2"
+            type="radio"
+            id="hex"
+            name="hex"
+            value="hex"
+            checked={colorFormat === "hex"}
+            onChange={onColorFormatChanged}
           />
-          <button
-            disabled={!isValidColor}
-            className="px-4 py-2 bg-slate-200 outline-1 outline-slate-700 outline rounded-r-md focus-within:outline-blue-600 focus-within:outline-2 disabled:bg-slate-50"
-          >
-            Submit
-          </button>
+          <label htmlFor="hex">Hex</label>
+          <input
+            type="radio"
+            id="rgb"
+            name="rgb"
+            value="rgb"
+            checked={colorFormat === "rgb"}
+            onChange={onColorFormatChanged}
+          />
+          <label htmlFor="rgb">RGB</label>
         </div>
+        <div className="grid grid-flow-col items-center gap-4">
+          <input
+            type="color"
+            value={color}
+            onChange={onColorInputChanged}
+            className="h-12 w-12"
+          />
+          <div>
+            <input
+              type="text"
+              value={inputTextColor}
+              onChange={onColorTextChanged}
+              spellCheck={false}
+              className="outline-1 outline-slate-700 outline rounded-l-md p-2 border-r-transparent focus-within:outline-blue-600 focus-within:outline-2"
+            />
+            <button
+              disabled={!isValidColor}
+              className="px-4 py-2 bg-slate-200 outline-1 outline-slate-700 outline rounded-r-md focus-within:outline-blue-600 focus-within:outline-2 disabled:bg-slate-50"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+        <button>Randomize</button>
         <div>{colorName}</div>
       </div>
     </div>
