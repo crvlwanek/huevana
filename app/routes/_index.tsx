@@ -196,28 +196,28 @@ export default function Index() {
             RGB
           </label>
         </div>
-        <div className="grid grid-flow-col items-center gap-4">
-          <input
-            type="color"
-            value={color}
-            onChange={onColorInputChanged}
-            className="h-12 w-12 shadow-sm"
-          />
-          <div className="shadow-sm">
+        <div className="grid grid-flow-col items-center shadow-sm">
+          <div className="h-10 w-10 overflow-hidden rounded-l-md outline-1 outline-slate-700 outline">
             <input
-              type="text"
-              value={inputTextColor}
-              onChange={onColorTextChanged}
-              spellCheck={false}
-              className="outline-1 outline-slate-700 outline rounded-l-md p-2 border-r-transparent focus-within:outline-blue-600 focus-within:outline-2"
+              type="color"
+              value={color}
+              onChange={onColorInputChanged}
+              className="h-10 w-10 shadow-sm scale-[2]"
             />
-            <button
-              disabled={!isValidColor}
-              className="px-4 py-2 bg-slate-200 outline-1 outline-slate-700 outline rounded-r-md focus-within:outline-blue-600 focus-within:outline-2 disabled:bg-slate-50"
-            >
-              Submit
-            </button>
           </div>
+          <input
+            type="text"
+            value={inputTextColor}
+            onChange={onColorTextChanged}
+            spellCheck={false}
+            className="outline-1 outline-slate-700 outline  p-2 border-r-transparent focus-within:outline-blue-600 focus-within:outline-2 pl-4"
+          />
+          <button
+            disabled={!isValidColor}
+            className="px-4 py-2 bg-slate-200 outline-1 outline-slate-700 outline rounded-r-md focus-within:outline-blue-600 focus-within:outline-2 disabled:bg-slate-50"
+          >
+            Submit
+          </button>
         </div>
         <button
           onClick={onRandomizeColor}
