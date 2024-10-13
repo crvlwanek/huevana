@@ -3,6 +3,7 @@ import { isRouteErrorResponse, useRouteError } from "@remix-run/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BODY_ID } from "~/root";
 import DiceIcon from "~/svg/DiceIcon";
+import GitHubIcon from "~/svg/GitHubIcon";
 import UpArrowIcon from "~/svg/UpArrowIcon";
 
 export const meta: MetaFunction = () => {
@@ -182,7 +183,7 @@ export default function Index() {
   }, [colorFormat]);
 
   return (
-    <div className="flex h-dvh items-center justify-center">
+    <div className="flex h-dvh items-center justify-center flex-col gap-4">
       <div className="grid gap-4 place-items-center bg-slate-50 p-10 rounded-3xl">
         <h1 className="text-4xl mb-6 text-slate-800 font-extrabold">Huevana</h1>
         <div className="grid grid-flow-col shadow-sm">
@@ -262,6 +263,15 @@ export default function Index() {
         {/* TODO: Add color name */}
         {/*<div>{colorName}</div>*/}
       </div>
+      <a
+        href="https://github.com/crvlwanek/huevana"
+        rel="noreferrer"
+        target="_blank"
+        className="px-4 py-2 bg-slate-700/50 text-white fill-white rounded-full flex items-center gap-2 hover:bg-slate-700/60 hover:shadow-md active:scale-95 transition-all focus-visible:outline-blue-600 focus-visible:outline-2 cursor-pointer"
+      >
+        <GitHubIcon />
+        <span>View on GitHub</span>
+      </a>
     </div>
   );
 }
