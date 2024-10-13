@@ -160,7 +160,7 @@ export default function Index() {
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="grid gap-4 place-items-center bg-slate-50 p-10 rounded-3xl">
-        <h1 className="text-4xl mb-6">Huevana</h1>
+        <h1 className="text-4xl mb-6 text-slate-800 font-extrabold">Huevana</h1>
         <div className="grid grid-flow-col shadow-sm">
           <input
             type="radio"
@@ -176,8 +176,8 @@ export default function Index() {
             className={
               "cursor-pointer px-4 py-1 rounded-l-2xl font-semibold outline-slate-700/20 text-sm" +
               (colorFormat === "hex"
-                ? " bg-blue-100  text-blue-600 outline outline-1 z-10"
-                : "  bg-slate-100 outline outline-1 text-slate-600")
+                ? " bg-blue-100  text-blue-600 outline outline-1 z-10 hover:bg-blue-200"
+                : "  bg-slate-100 outline outline-1 text-slate-600 hover:bg-slate-200")
             }
           >
             Hex
@@ -196,8 +196,8 @@ export default function Index() {
             className={
               "cursor-pointer px-4 py-1 rounded-r-2xl font-semibold outline-slate-700/20 text-sm" +
               (colorFormat === "rgb"
-                ? " bg-blue-100 font-bold text-blue-600 outline outline-slate-700/20 outline-1 z-10"
-                : " bg-slate-100 outline outline-1 text-slate-600")
+                ? " bg-blue-100 font-bold text-blue-600 outline outline-1 z-10 hover:bg-blue-200"
+                : " bg-slate-100 outline outline-1 text-slate-600 hover:bg-slate-200")
             }
           >
             RGB
@@ -205,7 +205,7 @@ export default function Index() {
         </div>
         <div className="grid grid-flow-col items-center gap-[1px] relative">
           <div className="absolute cursor-pointer left-[10px]">
-            <div className="h-[30px] w-[30px] overflow-hidden rounded-full outline outline-2 outline-black/20">
+            <div className="h-[30px] w-[30px] overflow-hidden rounded-full outline outline-1 outline-black/20">
               <input
                 type="color"
                 value={color}
@@ -219,18 +219,18 @@ export default function Index() {
             value={inputTextColor}
             onChange={onColorTextChanged}
             spellCheck={false}
-            className="outline-1 outline-slate-700/20 text-slate-700 font-bold outline p-3 rounded-full focus-visible:outline-blue-600 focus-visible:outline-2 focus-visible:z-10 pl-12 max-w-[250px] bg-transparent"
+            className="outline-1 outline-slate-700/20 text-slate-700 font-bold outline p-3 rounded-full focus-visible:outline-blue-600 focus-visible:outline-2 focus-visible:z-10 pl-12 max-w-[250px] bg-transparent hover:outline-slate-700/30"
           />
           <button
             disabled={!isValidColor}
-            className="absolute right-2 fill-slate-50 bg-slate-700 rounded-full disabled:bg-slate-700/10"
+            className="absolute right-2 fill-slate-50 bg-slate-800 rounded-full disabled:bg-slate-700/10 hover:bg-slate-600"
           >
             <UpArrowIcon />
           </button>
         </div>
         <button
           onClick={onRandomizeColor}
-          className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full fill-slate-700 flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch focus-visible:outline-blue-600 focus-visible:outline-2"
+          className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full fill-slate-700 flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch focus-visible:outline-blue-600 focus-visible:outline-2 hover:shadow-md transition-all hover:bg-slate-300 active:scale-95"
         >
           <DiceIcon />
           <span>Randomize</span>
