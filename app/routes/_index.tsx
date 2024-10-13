@@ -1,6 +1,7 @@
 import type { MetaFunction } from "@remix-run/node";
 import { isRouteErrorResponse, useRouteError } from "@remix-run/react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BODY_ID } from "~/root";
 import DiceIcon from "~/svg/DiceIcon";
 import UpArrowIcon from "~/svg/UpArrowIcon";
 
@@ -113,13 +114,19 @@ export default function Index() {
     [inputTextColor]
   );
 
+  const changeColor = useCallback((color: string) => {
+    setColor(color);
+    const body = document?.getElementById(BODY_ID);
+    if (body) body.style.backgroundColor = color;
+  }, []);
+
   const onColorTextChanged = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const { value } = event.target;
       setInputTextColor(value);
       const parsedColor = tryParseInputColor(value);
       if (!parsedColor) return;
-      setColor(parsedColor);
+      changeColor(parsedColor);
       if (isValidHex(value)) setColorFormat("hex");
       else setColorFormat("rgb");
     },
@@ -131,7 +138,7 @@ export default function Index() {
       const { value } = event.target;
       const newInputTextColor = colorFormat === "hex" ? value : hexToRgb(value);
       setInputTextColor(newInputTextColor);
-      setColor(value);
+      changeColor(value);
     },
     [colorFormat]
   );
@@ -154,7 +161,7 @@ export default function Index() {
     const newInputTextColor =
       colorFormat === "hex" ? newColor : hexToRgb(newColor);
     setInputTextColor(newInputTextColor);
-    setColor(newColor);
+    changeColor(newColor);
     document
       ?.getElementById(DICE_ICON_ID)
       ?.animate(
@@ -175,7 +182,7 @@ export default function Index() {
   }, [colorFormat]);
 
   return (
-    <div className="flex h-screen items-center justify-center">
+    <div className="flex h-dvh items-center justify-center">
       <div className="grid gap-4 place-items-center bg-slate-50 p-10 rounded-3xl">
         <h1 className="text-4xl mb-6 text-slate-800 font-extrabold">Huevana</h1>
         <div className="grid grid-flow-col shadow-sm">
