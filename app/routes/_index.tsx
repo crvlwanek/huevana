@@ -2,6 +2,7 @@ import type { MetaFunction } from "@remix-run/node";
 import { isRouteErrorResponse, useRouteError } from "@remix-run/react";
 import { useCallback, useMemo, useState } from "react";
 import DiceIcon from "~/svg/DiceIcon";
+import UpArrowIcon from "~/svg/UpArrowIcon";
 
 export const meta: MetaFunction = () => {
   return [
@@ -88,9 +89,19 @@ const tryParseInputColor = (color: string): string | undefined => {
   return tryParseRGBColor(color);
 };
 
-const getRandomHexColor = (): string => {
+/** Gets a single random hex value */
+const getRandomHexValue = (): string => {
   const number = Math.round(Math.random() * 255);
   return number.toString(16).padStart(2, "0");
+};
+
+/** Get a random hex color */
+const getRandomHexColor = (): string => {
+  const r = getRandomHexValue();
+  const g = getRandomHexValue();
+  const b = getRandomHexValue();
+
+  return `#${r}${g}${b}`;
 };
 
 export default function Index() {
@@ -139,11 +150,7 @@ export default function Index() {
   );
 
   const onRandomizeColor = useCallback(() => {
-    const r = getRandomHexColor();
-    const g = getRandomHexColor();
-    const b = getRandomHexColor();
-
-    const newColor = `#${r}${g}${b}`;
+    const newColor = getRandomHexColor();
     const newInputTextColor =
       colorFormat === "hex" ? newColor : hexToRgb(newColor);
     setInputTextColor(newInputTextColor);
@@ -196,32 +203,34 @@ export default function Index() {
             RGB
           </label>
         </div>
-        <div className="grid grid-flow-col items-center gap-[1px]">
-          <div className="h-6 w-6 overflow-hidden rounded-full m-2 shadow-[inset_0_0_0_5px_rgba(0,0,0,0.3)] absolute ">
-            <input
-              type="color"
-              value={color}
-              onChange={onColorInputChanged}
-              className="h-10 w-10 scale-[2] cursor-pointer"
-            />
+        <div className="grid grid-flow-col items-center gap-[1px] relative">
+          <div className="absolute cursor-pointer left-[10px]">
+            <div className="h-[30px] w-[30px] overflow-hidden rounded-full outline outline-2 outline-black/20">
+              <input
+                type="color"
+                value={color}
+                onChange={onColorInputChanged}
+                className="h-10 w-10 scale-[2] cursor-pointer"
+              />
+            </div>
           </div>
           <input
             type="text"
             value={inputTextColor}
             onChange={onColorTextChanged}
             spellCheck={false}
-            className="outline-1 outline-slate-700/20 text-slate-700 font-bold outline p-2 rounded-full focus-within:outline-blue-600 focus-within:outline-2 focus-within:z-10 pl-10 max-w-[250px] bg-transparent"
+            className="outline-1 outline-slate-700/20 text-slate-700 font-bold outline p-3 rounded-full focus-visible:outline-blue-600 focus-visible:outline-2 focus-visible:z-10 pl-12 max-w-[250px] bg-transparent"
           />
+          <button
+            disabled={!isValidColor}
+            className="absolute right-2 fill-slate-50 bg-slate-700 rounded-full disabled:bg-slate-700/10"
+          >
+            <UpArrowIcon />
+          </button>
         </div>
         <button
-          disabled={!isValidColor}
-          className="px-4 py-2 bg-blue-500 text-white rounded-full focus-within:outline-blue-600 focus-within:outline-2 disabled:bg-slate-50 font-semibold place-self-stretch"
-        >
-          Submit
-        </button>
-        <button
           onClick={onRandomizeColor}
-          className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full fill-slate-700 flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch focus-within:outline-blue-600 focus-within:outline-2"
+          className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full fill-slate-700 flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch focus-visible:outline-blue-600 focus-visible:outline-2"
         >
           <DiceIcon />
           <span>Randomize</span>
