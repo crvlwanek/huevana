@@ -1,6 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
 import { isRouteErrorResponse, useRouteError } from "@remix-run/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import DiceIcon from "~/svg/DiceIcon";
 import UpArrowIcon from "~/svg/UpArrowIcon";
 
@@ -12,7 +12,7 @@ export const meta: MetaFunction = () => {
 };
 
 const DEFAULT_COLOR = "#98FB98";
-const colorName = "Minty green";
+const DICE_ICON_ID = "diceIcon";
 
 /** Determines if the given string is a valid hex or RGB color */
 const isValidHexOrRGB = (color: string): boolean => {
@@ -155,6 +155,23 @@ export default function Index() {
       colorFormat === "hex" ? newColor : hexToRgb(newColor);
     setInputTextColor(newInputTextColor);
     setColor(newColor);
+    document
+      ?.getElementById(DICE_ICON_ID)
+      ?.animate(
+        [
+          { transform: "rotate(0) scale(1.05)" },
+          { transform: "rotate(30deg) scale(1.05)" },
+          { transform: "rotate(0) scale(1.05)" },
+          { transform: "rotate(-25deg) scale(1.05)" },
+          { transform: "rotate(0) scale(1.05)" },
+          { transform: "rotate(20deg) scale(1.05)" },
+          { transform: "rotate(0) scale(1.05)" },
+        ],
+        {
+          duration: 300,
+          iterations: 1,
+        }
+      );
   }, [colorFormat]);
 
   return (
@@ -232,7 +249,7 @@ export default function Index() {
           onClick={onRandomizeColor}
           className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full fill-slate-700 flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch focus-visible:outline-blue-600 focus-visible:outline-2 hover:shadow-md transition-all hover:bg-slate-300 active:scale-95"
         >
-          <DiceIcon />
+          <DiceIcon id={DICE_ICON_ID} />
           <span>Randomize</span>
         </button>
         {/* TODO: Add color name */}
