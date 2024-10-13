@@ -170,9 +170,9 @@ export default function Index() {
           { transform: "rotate(30deg) scale(1.05)" },
           { transform: "rotate(0) scale(1.05)" },
           { transform: "rotate(-25deg) scale(1.05)" },
-          { transform: "rotate(0) scale(1.05)" },
-          { transform: "rotate(20deg) scale(1.05)" },
-          { transform: "rotate(0) scale(1.05)" },
+          { transform: "rotate(0) scale(1)" },
+          { transform: "rotate(20deg) scale(1)" },
+          { transform: "rotate(0) scale(1)" },
         ],
         {
           duration: 300,
