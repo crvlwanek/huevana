@@ -3,6 +3,7 @@ import {
   isRouteErrorResponse,
   useFetcher,
   useRouteError,
+  useSearchParams,
 } from "@remix-run/react";
 import { env } from "env";
 import OpenAI from "openai";
@@ -151,6 +152,8 @@ export default function Index() {
   const fetcher = useFetcher<typeof action>();
   const { submittedColor, submittedColorName } = fetcher.data ?? {};
 
+  const [_, setSearchParams] = useSearchParams();
+
   const [inputTextColor, setInputTextColor] = useState(DEFAULT_COLOR);
   const [color, setColor] = useState(DEFAULT_COLOR);
   const [colorFormat, setColorFormat] = useState<"hex" | "rgb">("hex");
@@ -166,6 +169,11 @@ export default function Index() {
 
   const changeColor = useCallback((color: string) => {
     setColor(color);
+    setSearchParams((prev) => {
+      // Remove the "#" from the front
+      prev.set("color", color.slice(1));
+      return prev;
+    });
     const body = document?.getElementById(BODY_ID);
     if (body) body.style.backgroundColor = color;
   }, []);
@@ -333,7 +341,7 @@ export default function Index() {
         <span
           className={
             "text-2xl font-extrabold absolute px-4 py-2 rounded-full bg-slate-700/80 text-white whitespace-nowrap transition-all duration-500 ease-[cubic-bezier(.77,-.58,.3,1.47)] translate-x-[-50%] " +
-            (hideText ? "bottom-0 opacity-0 scale-0" : "bottom-[-60px]")
+            (hideText ? "bottom-4 opacity-0 scale-0" : "bottom-[-60px]")
           }
         >
           {submittedColorName}
