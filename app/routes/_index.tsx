@@ -67,12 +67,14 @@ const tryParseRGBColor = (color: string): string | undefined => {
   return rgbToHex(+r, +g, +b);
 };
 
+/** Converts an RBG value to a hex string */
 const rgbToHex = (r: number, g: number, b: number): string => {
   return `#${r.toString(16).padStart(2, "0")}${g
     .toString(16)
     .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 };
 
+/** Converts a hex string to RGB */
 const hexToRgb = (hex: string): string => {
   const chars = hex.split("");
   if (chars.length === 4) {
