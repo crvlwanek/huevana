@@ -1,9 +1,16 @@
-import type { MetaFunction } from "@remix-run/node";
-import { isRouteErrorResponse, useRouteError } from "@remix-run/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
+import {
+  isRouteErrorResponse,
+  useFetcher,
+  useRouteError,
+} from "@remix-run/react";
+import { env } from "env";
+import OpenAI from "openai";
+import { useCallback, useMemo, useState } from "react";
 import { BODY_ID } from "~/root";
 import DiceIcon from "~/svg/DiceIcon";
 import GitHubIcon from "~/svg/GitHubIcon";
+import SpinnerIcon from "~/svg/SpinnerIcon";
 import UpArrowIcon from "~/svg/UpArrowIcon";
 
 export const meta: MetaFunction = () => {
@@ -15,6 +22,8 @@ export const meta: MetaFunction = () => {
 
 const DEFAULT_COLOR = "#98FB98";
 const DICE_ICON_ID = "diceIcon";
+
+const openai = new OpenAI({ apiKey: env.get("OPEN_AI_KEY") });
 
 /** Determines if the given string is a valid hex or RGB color */
 const isValidHexOrRGB = (color: string): boolean => {
@@ -106,13 +115,51 @@ const getRandomHexColor = (): string => {
   return `#${r}${g}${b}`;
 };
 
+export async function action({ request }: ActionFunctionArgs) {
+  const data = await request.formData();
+  const color = data.get("color")?.toString() ?? "";
+  // Don't accept an invalid color; could throw an error here in debug mode
+  if (!isValidHex(color)) return null;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a helpful assistant who is a skilled expert in art and graphic design.",
+        },
+        {
+          role: "user",
+          content: `If you had to come up with a name for a the color with the hex code ${color} what would you call it? Please give your answer in just the color name, no other explanation is necessary.`,
+        },
+      ],
+    });
+    return {
+      submittedColorName: completion.choices[0].message.content,
+      submittedColor: color,
+    };
+  } catch (err) {
+    return null;
+  }
+}
+
 export default function Index() {
+  const fetcher = useFetcher<typeof action>();
+  const { submittedColor, submittedColorName } = fetcher.data ?? {};
+
   const [inputTextColor, setInputTextColor] = useState(DEFAULT_COLOR);
   const [color, setColor] = useState(DEFAULT_COLOR);
   const [colorFormat, setColorFormat] = useState<"hex" | "rgb">("hex");
   const isValidColor = useMemo(
     () => isValidHexOrRGB(inputTextColor),
     [inputTextColor]
+  );
+  const isLoading = useMemo(() => fetcher.state !== "idle", [fetcher.state]);
+  const hideText = useMemo(
+    () => !submittedColorName || color !== submittedColor,
+    [submittedColor, color, submittedColorName]
   );
 
   const changeColor = useCallback((color: string) => {
@@ -183,9 +230,9 @@ export default function Index() {
   }, [colorFormat]);
 
   return (
-    <div className="flex h-dvh items-center justify-center flex-col gap-4">
-      <div className="grid gap-4 place-items-center bg-slate-50 p-10 rounded-3xl">
-        <h1 className="text-4xl mb-6 text-slate-800 font-extrabold">Huevana</h1>
+    <div className="flex h-dvh items-center justify-center flex-col">
+      <div className="grid gap-3 place-items-center bg-slate-50 p-8 rounded-3xl relative z-10">
+        <h1 className="text-4xl mb-4 text-slate-800 font-extrabold">Huevana</h1>
         <div className="grid grid-flow-col shadow-sm">
           <input
             type="radio"
@@ -199,7 +246,7 @@ export default function Index() {
           <label
             htmlFor="hex"
             className={
-              "cursor-pointer px-4 py-1 rounded-l-2xl font-semibold outline-slate-700/20 text-sm" +
+              "cursor-pointer px-4 py-1 rounded-l-2xl font-semibold outline-slate-700/20 text-sm select-none" +
               (colorFormat === "hex"
                 ? " bg-blue-100  text-blue-600 outline outline-1 z-10 hover:bg-blue-200"
                 : "  bg-slate-100 outline outline-1 text-slate-600 hover:bg-slate-200")
@@ -219,7 +266,7 @@ export default function Index() {
           <label
             htmlFor="rgb"
             className={
-              "cursor-pointer px-4 py-1 rounded-r-2xl font-semibold outline-slate-700/20 text-sm" +
+              "cursor-pointer px-4 py-1 rounded-r-2xl font-semibold outline-slate-700/20 text-sm select-none" +
               (colorFormat === "rgb"
                 ? " bg-blue-100 font-bold text-blue-600 outline outline-1 z-10 hover:bg-blue-200"
                 : " bg-slate-100 outline outline-1 text-slate-600 hover:bg-slate-200")
@@ -228,10 +275,14 @@ export default function Index() {
             RGB
           </label>
         </div>
-        <div className="grid grid-flow-col items-center gap-[1px] relative">
+        <fetcher.Form
+          className="grid grid-flow-col items-center gap-[1px] relative"
+          method="POST"
+        >
           <div className="absolute cursor-pointer left-[10px]">
             <div className="h-[30px] w-[30px] overflow-hidden rounded-full outline outline-1 outline-black/20">
               <input
+                name="color"
                 type="color"
                 value={color}
                 onChange={onColorInputChanged}
@@ -240,38 +291,52 @@ export default function Index() {
             </div>
           </div>
           <input
+            name="inputTextColor"
             type="text"
             value={inputTextColor}
             onChange={onColorTextChanged}
             spellCheck={false}
-            className="outline-1 outline-slate-700/20 text-slate-700 font-bold outline p-3 rounded-full focus-visible:outline-blue-600 focus-visible:outline-2 focus-visible:z-10 pl-12 max-w-[250px] bg-transparent hover:outline-slate-700/30"
+            className="outline-1 outline-slate-700/20 text-slate-700 font-bold outline p-3 rounded-full focus-visible:outline-blue-600 focus-visible:outline-2 focus-visible:z-10 pl-12 max-w-[250px] bg-transparent hover:outline-slate-700/40"
           />
           <button
-            disabled={!isValidColor}
-            className="absolute right-2 fill-slate-50 bg-slate-800 rounded-full disabled:bg-slate-700/10 hover:bg-slate-600"
+            disabled={!isValidColor || isLoading || submittedColor === color}
+            type="submit"
+            className="h-8 w-8 absolute right-2 fill-slate-50 bg-slate-800 rounded-full cursor-pointer disabled:cursor-default disabled:bg-slate-700/10 hover:bg-slate-600 grid place-items-center"
           >
-            <UpArrowIcon />
+            {isLoading ? (
+              <SpinnerIcon className="fill-slate-700 animate-spin" />
+            ) : (
+              <UpArrowIcon />
+            )}
           </button>
-        </div>
+        </fetcher.Form>
         <button
           onClick={onRandomizeColor}
-          className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full fill-slate-700 flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch focus-visible:outline-blue-600 focus-visible:outline-2 hover:shadow-md transition-all hover:bg-slate-300 active:scale-95"
+          className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full fill-slate-700 flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch focus-visible:outline-blue-600 focus-visible:outline-2 hover:shadow-md transition-all hover:bg-slate-300 active:scale-95 select-none"
         >
           <DiceIcon id={DICE_ICON_ID} />
           <span>Randomize</span>
         </button>
-        {/* TODO: Add color name */}
-        {/*<div>{colorName}</div>*/}
+        <a
+          href="https://github.com/crvlwanek/huevana"
+          rel="noreferrer"
+          target="_blank"
+          className=" text-slate-700 fill-slate-700 rounded-full flex items-center gap-2 active:scale-95 transition-all focus-visible:outline-blue-600 focus-visible:outline-2 cursor-pointer select-none place-self-stretch justify-center"
+        >
+          <GitHubIcon />
+          <span>View on GitHub</span>
+        </a>
       </div>
-      <a
-        href="https://github.com/crvlwanek/huevana"
-        rel="noreferrer"
-        target="_blank"
-        className="px-4 py-2 bg-slate-700/50 text-white fill-white rounded-full flex items-center gap-2 hover:bg-slate-700/60 hover:shadow-md active:scale-95 transition-all focus-visible:outline-blue-600 focus-visible:outline-2 cursor-pointer"
-      >
-        <GitHubIcon />
-        <span>View on GitHub</span>
-      </a>
+      <div className="relative">
+        <span
+          className={
+            "text-2xl font-extrabold absolute px-4 py-2 rounded-full bg-slate-700/80 text-white whitespace-nowrap transition-all duration-500 ease-[cubic-bezier(.77,-.58,.3,1.47)] translate-x-[-50%] " +
+            (hideText ? "bottom-0 opacity-0 scale-0" : "bottom-[-60px]")
+          }
+        >
+          {submittedColorName}
+        </span>
+      </div>
     </div>
   );
 }
