@@ -169,11 +169,8 @@ export default function Index() {
 
   const changeColor = useCallback((color: string) => {
     setColor(color);
-    setSearchParams((prev) => {
-      // Remove the "#" from the front
-      prev.set("color", color.slice(1));
-      return prev;
-    });
+    // Remove the "#" from the front -- TODO: debounce this
+    //setSearchParams(new URLSearchParams({ color: color.slice(1) }));
     const body = document?.getElementById(BODY_ID);
     if (body) body.style.backgroundColor = color;
   }, []);
