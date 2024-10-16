@@ -299,12 +299,8 @@ export default function Index() {
           method="POST"
         >
           <div className="absolute cursor-pointer left-[10px]">
-            <div
-              onClick={() => document?.getElementById("inputColor")?.click()}
-              className="h-[30px] w-[30px] overflow-hidden rounded-full outline outline-1 outline-black/20 after:absolute after:inset-[-8px] after:rounded-full cursor-pointer"
-            >
+            <div className="h-[30px] w-[30px] overflow-hidden rounded-full outline outline-1 outline-black/20">
               <input
-                id="inputColor"
                 name="color"
                 type="color"
                 value={color}
