@@ -7,14 +7,7 @@ import {
 } from "@remix-run/react";
 import { env } from "env";
 import OpenAI from "openai";
-import {
-  createRef,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { createRef, useCallback, useEffect, useMemo, useState } from "react";
 import { BODY_ID } from "~/root";
 import DiceIcon from "~/svg/DiceIcon";
 import GitHubIcon from "~/svg/GitHubIcon";
@@ -142,7 +135,7 @@ export async function action({ request }: ActionFunctionArgs) {
         },
         {
           role: "user",
-          content: `If you had to come up with a name for a the color with the hex code ${color} what would you call it? Please give your answer in just the color name, no other explanation is necessary.`,
+          content: `If you had to come up with a name for a the color with the hex code ${color} what would you call it? Please give your answer in just the color name, no other explanation is necessary. Try to make the color names as accurate as possible to describe the hue, but also use extra descriptive words to differentiate different shades of the same hue.`,
         },
       ],
     });
