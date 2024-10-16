@@ -7,7 +7,14 @@ import {
 } from "@remix-run/react";
 import { env } from "env";
 import OpenAI from "openai";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  createRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { BODY_ID } from "~/root";
 import DiceIcon from "~/svg/DiceIcon";
 import GitHubIcon from "~/svg/GitHubIcon";
@@ -154,6 +161,8 @@ export default function Index() {
 
   const [_, setSearchParams] = useSearchParams();
 
+  const colorInputRef = createRef<HTMLInputElement>();
+
   const [inputTextColor, setInputTextColor] = useState(DEFAULT_COLOR);
   const [color, setColor] = useState(DEFAULT_COLOR);
   const [colorFormat, setColorFormat] = useState<"hex" | "rgb">("hex");
@@ -243,7 +252,7 @@ export default function Index() {
   }, [colorFormat]);
 
   return (
-    <div className="flex h-dvh items-center justify-center flex-col">
+    <div className="flex items-center justify-center flex-col min-h-dvh">
       <div className="grid gap-3 place-items-center bg-slate-50 p-8 rounded-3xl relative z-10">
         <h1 className="text-4xl mb-4 text-slate-800 font-extrabold">Huevana</h1>
         <div className="grid grid-flow-col shadow-sm">
@@ -293,13 +302,17 @@ export default function Index() {
           method="POST"
         >
           <div className="absolute cursor-pointer left-[10px]">
-            <div className="h-[30px] w-[30px] overflow-hidden rounded-full outline outline-1 outline-black/20">
+            <div
+              onClick={() => colorInputRef.current?.click()}
+              className="h-[30px] w-[30px] overflow-hidden rounded-full outline outline-1 outline-black/20 after:absolute after:inset-[-8px] after:rounded-full cursor-pointer"
+            >
               <input
                 name="color"
                 type="color"
                 value={color}
                 onChange={onColorInputChanged}
                 className="h-10 w-10 scale-[2] cursor-pointer"
+                ref={colorInputRef}
               />
             </div>
           </div>
@@ -314,7 +327,7 @@ export default function Index() {
           <button
             disabled={!isValidColor || isLoading || submittedColor === color}
             type="submit"
-            className="h-8 w-8 absolute right-2 fill-slate-50 bg-slate-800 rounded-full cursor-pointer disabled:cursor-default disabled:bg-slate-700/10 hover:bg-slate-600 grid place-items-center"
+            className="h-8 w-8 absolute right-2 fill-slate-50 bg-slate-800 rounded-full cursor-pointer disabled:cursor-default disabled:bg-slate-700/10 hover:bg-slate-600 grid place-items-center after:absolute after:inset-[-8px] after:rounded-full"
           >
             {isLoading ? (
               <SpinnerIcon className="fill-slate-700 animate-spin" />
