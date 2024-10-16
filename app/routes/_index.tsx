@@ -7,7 +7,7 @@ import {
 } from "@remix-run/react";
 import { env } from "env";
 import OpenAI from "openai";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BODY_ID } from "~/root";
 import DiceIcon from "~/svg/DiceIcon";
 import GitHubIcon from "~/svg/GitHubIcon";
@@ -169,11 +169,17 @@ export default function Index() {
 
   const changeColor = useCallback((color: string) => {
     setColor(color);
-    // Remove the "#" from the front -- TODO: debounce this
-    //setSearchParams(new URLSearchParams({ color: color.slice(1) }));
     const body = document?.getElementById(BODY_ID);
     if (body) body.style.backgroundColor = color;
   }, []);
+
+  useEffect(() => {
+    const timeout = setTimeout(
+      () => setSearchParams(new URLSearchParams({ color: color.slice(1) })),
+      100
+    );
+    return () => clearTimeout(timeout);
+  }, [color]);
 
   const onColorTextChanged = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
