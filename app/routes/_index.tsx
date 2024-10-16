@@ -118,6 +118,10 @@ const getRandomHexColor = (): string => {
   return `#${r}${g}${b}`;
 };
 
+const caseInsensitiveEquals = (a: string, b: string): boolean => {
+  return a.toLowerCase() === b.toLowerCase();
+};
+
 export async function action({ request }: ActionFunctionArgs) {
   const data = await request.formData();
   const color = data.get("color")?.toString() ?? "";
@@ -165,7 +169,9 @@ export default function Index() {
   );
   const isLoading = useMemo(() => fetcher.state !== "idle", [fetcher.state]);
   const hideText = useMemo(
-    () => !submittedColorName || color !== submittedColor,
+    () =>
+      (false && !submittedColorName) ||
+      !caseInsensitiveEquals(color, submittedColor ?? ""),
     [submittedColor, color, submittedColorName]
   );
 
@@ -318,7 +324,11 @@ export default function Index() {
             className="outline-1 outline-slate-700/20 text-slate-700 font-bold outline p-3 rounded-full focus-visible:outline-blue-600 focus-visible:outline-2 focus-visible:z-10 pl-12 max-w-[250px] bg-transparent hover:outline-slate-700/40"
           />
           <button
-            disabled={!isValidColor || isLoading || submittedColor === color}
+            disabled={
+              !isValidColor ||
+              isLoading ||
+              caseInsensitiveEquals(submittedColor ?? "", color)
+            }
             type="submit"
             className="h-8 w-8 absolute right-2 fill-slate-50 bg-slate-800 rounded-full cursor-pointer disabled:cursor-default disabled:bg-slate-700/10 hover:bg-slate-600 grid place-items-center after:absolute after:inset-[-8px] after:rounded-full"
           >
