@@ -7,7 +7,7 @@ import {
 } from "@remix-run/react";
 import { env } from "env";
 import OpenAI from "openai";
-import { createRef, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BODY_ID } from "~/root";
 import DiceIcon from "~/svg/DiceIcon";
 import GitHubIcon from "~/svg/GitHubIcon";
@@ -158,8 +158,6 @@ export default function Index() {
 
   const [_, setSearchParams] = useSearchParams();
 
-  const colorInputRef = createRef<HTMLInputElement>();
-
   const [inputTextColor, setInputTextColor] = useState(DEFAULT_COLOR);
   const [color, setColor] = useState(DEFAULT_COLOR);
   const [colorFormat, setColorFormat] = useState<"hex" | "rgb">("hex");
@@ -302,16 +300,16 @@ export default function Index() {
         >
           <div className="absolute cursor-pointer left-[10px]">
             <div
-              onClick={() => colorInputRef.current?.click()}
+              onClick={() => document?.getElementById("inputColor")?.click()}
               className="h-[30px] w-[30px] overflow-hidden rounded-full outline outline-1 outline-black/20 after:absolute after:inset-[-8px] after:rounded-full cursor-pointer"
             >
               <input
+                id="inputColor"
                 name="color"
                 type="color"
                 value={color}
                 onChange={onColorInputChanged}
                 className="h-10 w-10 scale-[2] cursor-pointer"
-                ref={colorInputRef}
               />
             </div>
           </div>
