@@ -4,10 +4,12 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 
 import "./tailwind.css";
+import { DEFAULT_COLOR, isValidHex } from "./lib/colors";
 
 export const BODY_ID = "body";
 
@@ -24,7 +26,22 @@ export const links: LinksFunction = () => [
   },
 ];
 
+export const getColorFromRequest = (request: Request) => {
+  const url = new URL(request.url);
+  const query = url.searchParams.get("color") ?? "";
+  const color = `#${query}`;
+
+  const defaultColor = isValidHex(color) ? color : DEFAULT_COLOR;
+  return { defaultColor };
+};
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  return getColorFromRequest(request);
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { defaultColor } = useLoaderData<typeof loader>();
+
   return (
     <html lang="en">
       <head>
@@ -35,7 +52,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body
         id={BODY_ID}
-        style={{ backgroundColor: "#98FB98" }}
+        style={{ backgroundColor: defaultColor }}
         className="bg-opacity-20"
       >
         {children}
