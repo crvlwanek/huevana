@@ -78,16 +78,16 @@ export const tryParseInputColor = (color: string): string | undefined => {
 };
 
 /** Gets a single random hex value */
-const getRandomHexValue = (): string => {
+const generateRandomHexValue = (): string => {
   const number = Math.round(Math.random() * 255);
   return number.toString(16).padStart(2, "0");
 };
 
 /** Get a random hex color */
-export const getRandomHexColor = (): string => {
-  const r = getRandomHexValue();
-  const g = getRandomHexValue();
-  const b = getRandomHexValue();
+export const generateRandomHexColor = (): string => {
+  const r = generateRandomHexValue();
+  const g = generateRandomHexValue();
+  const b = generateRandomHexValue();
 
   return `#${r}${g}${b}`;
 };

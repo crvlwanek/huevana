@@ -14,7 +14,7 @@ import { env } from "env";
 import OpenAI from "openai";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  getRandomHexColor,
+  generateRandomHexColor,
   hexToRgb,
   isValidHex,
   isValidHexOrRGB,
@@ -153,7 +153,7 @@ export default function Index() {
   );
 
   const onRandomizeColor = useCallback(() => {
-    const newColor = getRandomHexColor();
+    const newColor = generateRandomHexColor();
     const newInputTextColor =
       colorFormat === "hex" ? newColor : hexToRgb(newColor);
     setInputTextColor(newInputTextColor);
