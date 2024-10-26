@@ -6,9 +6,7 @@ export default class EnvironmentVariables<T extends string> {
   }
 
   public get(key: T): string {
-    if (!process.env) {
-      throw new Error("Environment variables not found");
-    }
+    if (!process.env) throw new Error("Environment variables not found");
 
     const value = process.env[key];
     if (!value) {

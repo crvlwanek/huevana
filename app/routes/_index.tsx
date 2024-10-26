@@ -13,6 +13,7 @@ import {
 import { env } from "env";
 import OpenAI from "openai";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { BubbleBox } from "~/components/Bubbles";
 import {
   generateRandomHexColor,
   hexToRgb,
@@ -104,11 +105,6 @@ export default function Index() {
   }, []);
 
   useEffect(() => {
-    const body = document?.getElementById(BODY_ID);
-    if (body) body.style.backgroundColor = color;
-  });
-
-  useEffect(() => {
     const timeout = setTimeout(
       () => setSearchParams(new URLSearchParams({ color: color.slice(1) })),
       100
@@ -179,8 +175,9 @@ export default function Index() {
 
   return (
     <div className="flex items-center justify-center flex-col min-h-dvh">
-      <div className="grid gap-3 place-items-center bg-slate-50 p-8 rounded-3xl relative z-10">
-        <h1 className="text-4xl mb-4 text-slate-800 font-extrabold">Huevana</h1>
+      <BubbleBox />
+      <div className="grid gap-3 place-items-center p-8 rounded-3xl relative z-10 bg-slate-800/60 backdrop-blur-lg text-slate-50">
+        <h1 className="text-4xl mb-4 font-extrabold">Huevana</h1>
         <div className="grid grid-flow-col shadow-sm">
           <input
             type="radio"
@@ -194,10 +191,10 @@ export default function Index() {
           <label
             htmlFor="hex"
             className={
-              "cursor-pointer px-4 py-1 rounded-l-2xl font-semibold outline-slate-700/20 text-sm select-none" +
+              "cursor-pointer px-4 py-1 rounded-l-2xl font-semibold outline-slate-50/30 outline outline-1 text-sm select-none" +
               (colorFormat === "hex"
-                ? " bg-blue-100  text-blue-600 outline outline-1 z-10 hover:bg-blue-200"
-                : "  bg-slate-100 outline outline-1 text-slate-600 hover:bg-slate-200")
+                ? " bg-blue-400/90  text-slate-50 z-10 hover:bg-blue-300/90"
+                : "  bg-slate-100/20 text-slate-100 hover:bg-slate-50/30")
             }
           >
             Hex
@@ -214,10 +211,10 @@ export default function Index() {
           <label
             htmlFor="rgb"
             className={
-              "cursor-pointer px-4 py-1 rounded-r-2xl font-semibold outline-slate-700/20 text-sm select-none" +
+              "cursor-pointer px-4 py-1 rounded-r-2xl font-semibold outline-slate-50/30 outline outline-1 text-sm select-none" +
               (colorFormat === "rgb"
-                ? " bg-blue-100 font-bold text-blue-600 outline outline-1 z-10 hover:bg-blue-200"
-                : " bg-slate-100 outline outline-1 text-slate-600 hover:bg-slate-200")
+                ? " bg-blue-400/90  text-slate-50 z-10 hover:bg-blue-300/90"
+                : " bg-slate-100/20 text-slate-100 hover:bg-slate-50/30")
             }
           >
             RGB
@@ -244,7 +241,7 @@ export default function Index() {
             value={inputTextColor}
             onChange={onColorTextChanged}
             spellCheck={false}
-            className="outline-1 outline-slate-700/20 text-slate-700 font-bold outline p-3 rounded-full focus-visible:outline-blue-600 focus-visible:outline-2 focus-visible:z-10 pl-12 max-w-[250px] bg-transparent hover:outline-slate-700/40"
+            className="outline-1 outline-slate-50/20 text-slate-100 bg-slate-400/20 font-bold outline p-3 rounded-full focus-visible:outline-blue-300 focus-visible:outline-2 focus-visible:z-10 pl-12 max-w-[250px] hover:outline-slate-50/40"
           />
           <button
             disabled={
@@ -253,10 +250,10 @@ export default function Index() {
               caseInsensitiveEquals(submittedColor ?? "", color)
             }
             type="submit"
-            className="h-8 w-8 absolute right-2 fill-slate-50 bg-slate-800 rounded-full cursor-pointer disabled:cursor-default disabled:bg-slate-700/10 hover:bg-slate-600 grid place-items-center after:absolute after:inset-[-8px] after:rounded-full"
+            className="h-8 w-8 absolute right-2 fill-slate-50 bg-slate-100/20 rounded-full cursor-pointer disabled:cursor-default disabled:bg-slate-400/10 disabled:fill-slate-50/10 hover:bg-slate-50/40 grid place-items-center after:absolute after:inset-[-8px] after:rounded-full"
           >
             {isLoading ? (
-              <SpinnerIcon className="fill-slate-700 animate-spin" />
+              <SpinnerIcon className="fill-slate-50 animate-spin" />
             ) : (
               <UpArrowIcon />
             )}
@@ -264,7 +261,7 @@ export default function Index() {
         </fetcher.Form>
         <button
           onClick={onRandomizeColor}
-          className="px-4 py-2 bg-slate-200 text-slate-700 rounded-full fill-slate-700 flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch focus-visible:outline-blue-600 focus-visible:outline-2 hover:shadow-md transition-all hover:bg-slate-300 active:scale-95 select-none"
+          className="px-4 py-2 bg-slate-100 text-slate-700 fill-slate-700 rounded-full flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch focus-visible:outline-blue-600 focus-visible:outline-2 hover:shadow-md transition-all hover:bg-slate-300 active:scale-95 select-none"
         >
           <DiceIcon id={DICE_ICON_ID} />
           <span>Randomize</span>
@@ -273,7 +270,7 @@ export default function Index() {
           href="https://github.com/crvlwanek/huevana"
           rel="noreferrer"
           target="_blank"
-          className=" text-slate-700 fill-slate-700 rounded-full flex items-center gap-2 active:scale-95 transition-all focus-visible:outline-blue-600 focus-visible:outline-2 cursor-pointer select-none place-self-stretch justify-center"
+          className=" text-slate-50 fill-slate-50 rounded-full flex items-center gap-2 active:scale-95 transition-all focus-visible:outline-blue-600 focus-visible:outline-2 cursor-pointer select-none place-self-stretch justify-center"
         >
           <GitHubIcon />
           <span>View on GitHub</span>
@@ -282,7 +279,7 @@ export default function Index() {
       <div className="relative">
         <span
           className={
-            "text-2xl font-extrabold absolute px-4 py-2 rounded-full bg-slate-700/80 text-white whitespace-nowrap transition-all duration-500 ease-[cubic-bezier(.77,-.58,.3,1.47)] translate-x-[-50%] " +
+            "text-2xl font-extrabold absolute px-4 py-2 rounded-full bg-slate-700/80 text-white whitespace-nowrap transition-all duration-500 ease-[cubic-bezier(.77,-.58,.3,1.47)] translate-x-[-50%] z-[5] backdrop-blur-lg " +
             (hideText ? "bottom-4 opacity-0 scale-0" : "bottom-[-60px]")
           }
         >
