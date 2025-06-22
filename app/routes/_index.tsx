@@ -12,20 +12,22 @@ import {
 } from "@remix-run/react";
 import { env } from "env";
 import OpenAI from "openai";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BubbleBox } from "~/components/Bubbles";
 import {
   generateRandomHexColor,
   hexToRgb,
   isValidHex,
   isValidHexOrRGB,
+  rgbToHex,
   tryParseInputColor,
 } from "~/lib/colors";
 import { BODY_ID, getColorFromRequest } from "~/root";
 import DiceIcon from "~/svg/DiceIcon";
 import GitHubIcon from "~/svg/GitHubIcon";
 import SpinnerIcon from "~/svg/SpinnerIcon";
-import UpArrowIcon from "~/svg/UpArrowIcon";
+import ColorThief from "colorthief";
+import CameraIcon from "~/svg/CameraIcon";
 
 export const meta: MetaFunction = () => {
   return [
@@ -40,6 +42,15 @@ const openai = new OpenAI({ apiKey: env.get("OPEN_AI_KEY") });
 
 const caseInsensitiveEquals = (a: string, b: string): boolean => {
   return a.toLowerCase() === b.toLowerCase();
+};
+
+const getColorPallete = (img: HTMLImageElement): string[] => {
+  const colorThief = new ColorThief();
+  const colors = colorThief.getPalette(img, 5);
+  return colors.map((color) => {
+    const [r, g, b] = color;
+    return rgbToHex(r, g, b);
+  });
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -85,7 +96,16 @@ export default function Index() {
 
   const [inputTextColor, setInputTextColor] = useState(defaultColor);
   const [color, setColor] = useState(defaultColor);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [colorFormat, setColorFormat] = useState<"hex" | "rgb">("hex");
+  const [videoShowing, setVideoShowing] = useState(false);
+  const [photoShowing, setPhotoShowing] = useState(false);
+  const [photoColors, setPhotoColors] = useState<string[]>([]);
+
+  const videoRef = useRef<HTMLVideoElement>();
+  const canvasRef = useRef<HTMLCanvasElement>();
+  const imgRef = useRef<HTMLImageElement>();
+
   const isValidColor = useMemo(
     () => isValidHexOrRGB(inputTextColor),
     [inputTextColor]
@@ -97,6 +117,75 @@ export default function Index() {
       !caseInsensitiveEquals(color, submittedColor ?? ""),
     [submittedColor, color, submittedColorName]
   );
+
+  const startVideo = useCallback(async (): Promise<boolean> => {
+    if (!videoRef.current) return false;
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false,
+    });
+    videoRef.current.srcObject = stream;
+    videoRef.current.play();
+    return true;
+  }, []);
+
+  const stopVideo = useCallback(() => {
+    if (!videoRef.current) return;
+    const stream = videoRef.current.srcObject;
+    const tracks: MediaStreamTrack[] = (stream as any).getTracks();
+    tracks.forEach((track) => track.stop());
+    videoRef.current.srcObject = null;
+  }, []);
+
+  const openCameraModal = useCallback(async () => {
+    setVideoShowing(false);
+    setPhotoShowing(false);
+    setCameraOpen(true);
+
+    const videoStarted = await startVideo();
+    if (!videoStarted) {
+      setCameraOpen(false);
+      return;
+    }
+    setVideoShowing(true);
+    setPhotoShowing(false);
+  }, [startVideo]);
+
+  const closeCamera = useCallback(() => {
+    stopVideo();
+    setCameraOpen(false);
+  }, []);
+
+  const takePhoto = useCallback(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    const { videoWidth, videoHeight } = video;
+    const context = canvas.getContext("2d");
+
+    if (!context) return;
+
+    canvas.width = videoWidth;
+    canvas.height = videoHeight;
+
+    context.drawImage(video, 0, 0, videoWidth, videoHeight);
+    const data = canvas.toDataURL("image/png");
+    setPhotoShowing(true);
+    setVideoShowing(false);
+    if (imgRef.current) {
+      imgRef.current.setAttribute("src", data);
+
+      if (imgRef.current.complete) {
+        setPhotoColors(getColorPallete(imgRef.current));
+      } else {
+        imgRef.current.addEventListener("load", () => {
+          if (!imgRef.current) return;
+          setPhotoColors(getColorPallete(imgRef.current));
+        });
+      }
+    }
+  }, []);
 
   const changeColor = useCallback((color: string) => {
     setColor(color);
@@ -220,29 +309,45 @@ export default function Index() {
             RGB
           </label>
         </div>
-        <fetcher.Form
-          className="grid grid-flow-col items-center gap-[1px] relative"
-          method="POST"
-        >
-          <div className="absolute cursor-pointer left-[10px]">
-            <div className="h-[30px] w-[30px] overflow-hidden rounded-full outline outline-1 outline-black/20">
-              <input
-                name="color"
-                type="color"
-                value={color}
-                onChange={onColorInputChanged}
-                className="h-10 w-10 scale-[2] cursor-pointer appearance-none"
-              />
+        <fetcher.Form className="flex flex-col gap-3" method="POST">
+          <div className="relative">
+            <div className="absolute cursor-pointer left-[10px] h-full flex items-center">
+              <div className="h-[30px] w-[30px] overflow-hidden rounded-full outline outline-1 outline-slate-50/20">
+                <input
+                  name="color"
+                  type="color"
+                  value={color}
+                  onChange={onColorInputChanged}
+                  className="h-10 w-10 scale-[2] cursor-pointer appearance-none"
+                />
+              </div>
+            </div>
+            <input
+              name="inputTextColor"
+              type="text"
+              value={inputTextColor}
+              onChange={onColorTextChanged}
+              spellCheck={false}
+              className="outline-1 outline-slate-50/20 text-slate-100 bg-slate-400/20 font-bold outline p-3 rounded-full focus-visible:outline-blue-300 focus-visible:outline-2 focus-visible:z-10 pl-12 max-w-[250px] hover:outline-slate-50/40"
+            />
+            <div className="h-full flex items-center absolute right-[10px] top-0">
+              <button
+                onClick={openCameraModal}
+                type="button"
+                className="hover:bg-black/20 p-2 rounded-full -mr-2"
+              >
+                <CameraIcon className="fill-white" size={28} />
+              </button>
             </div>
           </div>
-          <input
-            name="inputTextColor"
-            type="text"
-            value={inputTextColor}
-            onChange={onColorTextChanged}
-            spellCheck={false}
-            className="outline-1 outline-slate-50/20 text-slate-100 bg-slate-400/20 font-bold outline p-3 rounded-full focus-visible:outline-blue-300 focus-visible:outline-2 focus-visible:z-10 pl-12 max-w-[250px] hover:outline-slate-50/40"
-          />
+          <button
+            type="button"
+            onClick={onRandomizeColor}
+            className="px-4 py-2 bg-slate-100 text-slate-700 fill-slate-700 rounded-full flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch focus-visible:outline-blue-600 focus-visible:outline-2 hover:shadow-md transition-all hover:bg-slate-300 active:scale-95 select-none"
+          >
+            <DiceIcon id={DICE_ICON_ID} />
+            <span>Randomize</span>
+          </button>
           <button
             disabled={
               !isValidColor ||
@@ -250,27 +355,20 @@ export default function Index() {
               caseInsensitiveEquals(submittedColor ?? "", color)
             }
             type="submit"
-            className="h-8 w-8 absolute right-2 fill-slate-50 bg-slate-100/20 rounded-full cursor-pointer disabled:cursor-default disabled:bg-slate-400/10 disabled:fill-slate-50/10 hover:bg-slate-50/40 grid place-items-center after:absolute after:inset-[-8px] after:rounded-full"
+            className="min-h-10 px-4 py-2 bg-blue-700 text-white fill-white rounded-full flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch  focus-visible:outline-blue-600 focus-visible:outline-2 hover:shadow-md transition-all hover:bg-blue-600 active:scale-95 select-none disabled:cursor-default disabled:opacity-50 disabled:bg-blue-700 disabled:shadow-none"
           >
             {isLoading ? (
               <SpinnerIcon className="fill-slate-50 animate-spin" />
             ) : (
-              <UpArrowIcon />
+              "Submit"
             )}
           </button>
         </fetcher.Form>
-        <button
-          onClick={onRandomizeColor}
-          className="px-4 py-2 bg-slate-100 text-slate-700 fill-slate-700 rounded-full flex items-center justify-center gap-1 shadow-sm font-semibold place-self-stretch focus-visible:outline-blue-600 focus-visible:outline-2 hover:shadow-md transition-all hover:bg-slate-300 active:scale-95 select-none"
-        >
-          <DiceIcon id={DICE_ICON_ID} />
-          <span>Randomize</span>
-        </button>
         <a
           href="https://github.com/crvlwanek/huevana"
           rel="noreferrer"
           target="_blank"
-          className=" text-slate-50 fill-slate-50 rounded-full flex items-center gap-2 active:scale-95 transition-all focus-visible:outline-blue-600 focus-visible:outline-2 cursor-pointer select-none place-self-stretch justify-center"
+          className=" text-slate-50 fill-slate-50 rounded-full flex items-center gap-2 active:scale-95 transition-all focus-visible:outline-blue-600 focus-visible:outline-2 cursor-pointer select-none place-self-stretch justify-center mt-8"
         >
           <GitHubIcon />
           <span>View on GitHub</span>
@@ -285,6 +383,73 @@ export default function Index() {
         >
           {submittedColorName}
         </span>
+      </div>
+      <div
+        className={
+          !cameraOpen
+            ? "hidden"
+            : "fixed inset-0 z-10 backdrop-blur-3xl bg-black/10 grid place-items-center"
+        }
+        onClick={closeCamera}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={`max-w-screen max-h-screen bg-slate-100 z-20 rounded-3xl overflow-hidden relative`}
+        >
+          <video
+            ref={(ref) => (videoRef.current = ref ?? undefined)}
+            id="video"
+            className={videoShowing ? undefined : "hidden"}
+          >
+            Video stream not available{" "}
+          </video>
+          <img
+            ref={(ref) => (imgRef.current = ref ?? undefined)}
+            className={photoShowing ? undefined : "hidden"}
+          />
+          <canvas
+            className="hidden"
+            ref={(ref) => (canvasRef.current = ref ?? undefined)}
+          />
+          <div className="absolute bottom-0 w-full flex flex-col items-center gap-4 justify-center pb-4">
+            {photoShowing && (
+              <div className="flex flex-col gap-4 justify-center items-center p-4 bg-slate-900/40 rounded-xl">
+                <label className="text-3xl text-white drop-shadow-xl">
+                  Select a color
+                </label>
+                <div className="flex gap-4">
+                  {photoColors.map((color) => (
+                    <button
+                      className="h-10 w-10 rounded-full border-white border-2"
+                      style={{ backgroundColor: color }}
+                      onClick={() => {
+                        setColor(color);
+                        setCameraOpen(false);
+                      }}
+                    />
+                  ))}
+                </div>
+                <button
+                  className="text-slate-800 bg-white px-4 py-2 rounded-xl hover:bg-slate-200"
+                  onClick={() => {
+                    setVideoShowing(true);
+                    setPhotoShowing(false);
+                  }}
+                >
+                  Retake Photo
+                </button>
+              </div>
+            )}
+            {cameraOpen && videoShowing && (
+              <button
+                className="p-1 bg-white rounded-full hover:bg-slate-100"
+                onClick={takePhoto}
+              >
+                <div className="h-16 w-16 rounded-full bg-white ring-2 hover:bg-slate-100 ring-slate-800 ring-inset ring-offset-width-2"></div>
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
