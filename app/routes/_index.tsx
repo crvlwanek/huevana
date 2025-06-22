@@ -122,7 +122,9 @@ export default function Index() {
     if (!videoRef.current) return false;
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
-        facingMode: "back",
+        facingMode: {
+          exact: "environment",
+        },
       },
       audio: false,
     });
