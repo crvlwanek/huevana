@@ -28,6 +28,7 @@ import GitHubIcon from "~/svg/GitHubIcon";
 import SpinnerIcon from "~/svg/SpinnerIcon";
 import ColorThief from "colorthief";
 import CameraIcon from "~/svg/CameraIcon";
+import CloseIcon from "~/svg/CloseIcon";
 
 export const meta: MetaFunction = () => {
   return [
@@ -122,9 +123,7 @@ export default function Index() {
     if (!videoRef.current) return false;
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
-        facingMode: {
-          exact: "environment",
-        },
+        facingMode: "back",
       },
       audio: false,
     });
@@ -398,18 +397,22 @@ export default function Index() {
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`max-w-screen max-h-screen bg-slate-100 z-20 rounded-3xl overflow-hidden relative`}
+          className={`max-w-screen max-h-screen w-screen h-screen md:w-auto md:h-auto md:rounded-3xl bg-black z-20 overflow-hidden relative grid place-items-center`}
         >
+          <button
+            className="absolute top-4 right-4 cursor-pointer bg-white rounded-full p-2 hover:bg-slate-100 z-[21]"
+            onClick={closeCamera}
+          >
+            <CloseIcon className="fill-slate-800 shadow-2xl" size={20} />
+          </button>
           <video
             ref={(ref) => (videoRef.current = ref ?? undefined)}
             id="video"
-            className={videoShowing ? undefined : "hidden"}
-          >
-            Video stream not available{" "}
-          </video>
+            className={videoShowing ? "w-full" : "hidden"}
+          />
           <img
             ref={(ref) => (imgRef.current = ref ?? undefined)}
-            className={photoShowing ? undefined : "hidden"}
+            className={photoShowing ? "w-full" : "hidden"}
           />
           <canvas
             className="hidden"
