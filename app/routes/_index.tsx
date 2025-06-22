@@ -121,7 +121,9 @@ export default function Index() {
   const startVideo = useCallback(async (): Promise<boolean> => {
     if (!videoRef.current) return false;
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
+      video: {
+        facingMode: "back",
+      },
       audio: false,
     });
     videoRef.current.srcObject = stream;
