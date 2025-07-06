@@ -29,6 +29,7 @@ import SpinnerIcon from "~/svg/SpinnerIcon";
 import ColorThief from "colorthief";
 import CameraIcon from "~/svg/CameraIcon";
 import CloseIcon from "~/svg/CloseIcon";
+import RefreshIcon from "~/svg/RefreshIcon";
 
 export const meta: MetaFunction = () => {
   return [
@@ -103,6 +104,11 @@ export default function Index() {
   const [photoShowing, setPhotoShowing] = useState(false);
   const [photoColors, setPhotoColors] = useState<string[]>([]);
 
+  const [usingBackCamera, setUsingBackCamera] = useState(true);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [hasFrontCamera, setHasFrontCamera] = useState(false);
+  const [hasBackCamera, setHasBackCamera] = useState(false);
+
   const videoRef = useRef<HTMLVideoElement>();
   const canvasRef = useRef<HTMLCanvasElement>();
   const imgRef = useRef<HTMLImageElement>();
@@ -119,24 +125,79 @@ export default function Index() {
     [submittedColor, color, submittedColorName]
   );
 
-  const startVideo = useCallback(async (): Promise<boolean> => {
-    if (!videoRef.current) return false;
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: "back",
-      },
-      audio: false,
-    });
-    videoRef.current.srcObject = stream;
-    videoRef.current.play();
-    return true;
-  }, []);
+  const startVideo = useCallback(
+    async (usingBackCamera: boolean): Promise<boolean> => {
+      if (!videoRef.current) return false;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: usingBackCamera ? "back" : "front",
+          },
+          audio: false,
+        });
+        setStream(stream);
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    []
+  );
+
+  const setupCameras = useCallback(async (): Promise<boolean> => {
+    stream?.getTracks()?.forEach((track) => track.stop());
+
+    let hasFrontCamera = false;
+    let hasBackCamera = false;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { exact: "user" },
+        },
+      });
+      setHasFrontCamera(true);
+      setStream(stream);
+      hasFrontCamera = true;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch {
+      setHasFrontCamera(false);
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { exact: "environment" },
+        },
+      });
+
+      setHasBackCamera(true);
+      setStream(stream);
+      hasBackCamera = true;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch {
+      setHasBackCamera(false);
+    }
+
+    await videoRef?.current?.play();
+
+    return hasFrontCamera || hasBackCamera;
+  }, [stream]);
+
+  useEffect(() => {
+    startVideo(usingBackCamera);
+  }, [usingBackCamera]);
 
   const stopVideo = useCallback(() => {
+    stream?.getTracks()?.forEach((track) => track.stop());
     if (!videoRef.current) return;
-    const stream = videoRef.current.srcObject;
-    const tracks: MediaStreamTrack[] = (stream as any).getTracks();
-    tracks.forEach((track) => track.stop());
     videoRef.current.srcObject = null;
   }, []);
 
@@ -145,11 +206,12 @@ export default function Index() {
     setPhotoShowing(false);
     setCameraOpen(true);
 
-    const videoStarted = await startVideo();
+    const videoStarted = await setupCameras();
     if (!videoStarted) {
       setCameraOpen(false);
       return;
     }
+
     setVideoShowing(true);
     setPhotoShowing(false);
   }, [startVideo]);
@@ -418,7 +480,7 @@ export default function Index() {
             className="hidden"
             ref={(ref) => (canvasRef.current = ref ?? undefined)}
           />
-          <div className="absolute bottom-0 w-full flex flex-col items-center gap-4 justify-center pb-4">
+          <div className="fixed md:absolute bottom-0 w-full flex flex-col items-center gap-4 justify-center pb-4">
             {photoShowing && (
               <div className="flex flex-col gap-4 justify-center items-center p-4 bg-slate-900/40 rounded-xl">
                 <label className="text-3xl text-white drop-shadow-xl">
@@ -448,12 +510,22 @@ export default function Index() {
               </div>
             )}
             {cameraOpen && videoShowing && (
-              <button
-                className="p-1 bg-white rounded-full hover:bg-slate-100"
-                onClick={takePhoto}
-              >
-                <div className="h-16 w-16 rounded-full bg-white ring-2 hover:bg-slate-100 ring-slate-800 ring-inset ring-offset-width-2"></div>
-              </button>
+              <div>
+                <button
+                  className="p-1 bg-white rounded-full hover:bg-slate-100"
+                  onClick={takePhoto}
+                >
+                  <div className="h-16 w-16 rounded-full bg-white ring-2 hover:bg-slate-100 ring-slate-800 ring-inset ring-offset-width-2"></div>
+                </button>
+                {hasFrontCamera && hasBackCamera && (
+                  <button
+                    onClick={() => setUsingBackCamera((val) => !val)}
+                    className="stroke-slate-950 bg-white rounded-full p-1 absolute right-10 bottom-10"
+                  >
+                    <RefreshIcon size={32} />
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>
