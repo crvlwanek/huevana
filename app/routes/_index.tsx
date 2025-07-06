@@ -48,7 +48,7 @@ const caseInsensitiveEquals = (a: string, b: string): boolean => {
 
 const getColorPallete = (img: HTMLImageElement): string[] => {
   const colorThief = new ColorThief();
-  const colors = colorThief.getPalette(img, 5);
+  const colors = colorThief.getPalette(img, 9);
   return colors.map((color) => {
     const [r, g, b] = color;
     return rgbToHex(r, g, b);
@@ -328,7 +328,7 @@ export default function Index() {
   return (
     <div className="flex items-center justify-center flex-col min-h-dvh">
       <BubbleBox />
-      <div className="grid gap-3 place-items-center p-8 rounded-3xl relative z-10 bg-slate-800/60 backdrop-blur-lg text-slate-50">
+      <div className="grid gap-3 place-items-center p-8 rounded-3xl relative z-10 bg-slate-800/60 backdrop-blur-lg text-slate-50 border-slate-100/20 border-[1px]">
         <h1 className="text-4xl mb-4 font-extrabold">Huevana</h1>
         <div className="grid grid-flow-col shadow-sm">
           <input
@@ -480,11 +480,11 @@ export default function Index() {
           />
           <div className="fixed md:absolute bottom-0 w-full flex flex-col items-center gap-4 justify-center">
             {photoShowing && (
-              <div className="flex flex-col gap-4 justify-center items-center p-4 bg-slate-900/40 rounded-xl">
-                <label className="text-3xl text-white drop-shadow-xl">
+              <div className="flex flex-col gap-4 justify-center items-center p-4 bg-slate-100/40 backdrop-blur-sm m-4 rounded-xl border-slate-100/40 border-[1px]">
+                <p className="text-3xl text-white drop-shadow-xl">
                   Select a color
-                </label>
-                <div className="flex gap-4">
+                </p>
+                <div className="flex gap-4 flex-wrap justify-center">
                   {photoColors.map((color) => (
                     <button
                       className="h-10 w-10 rounded-full border-white border-2"
