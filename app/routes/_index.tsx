@@ -459,7 +459,7 @@ export default function Index() {
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`max-w-screen max-h-screen w-screen h-screen md:w-auto md:h-auto md:rounded-3xl bg-black z-20 overflow-hidden relative grid place-items-center`}
+          className={`max-w-screen max-h-screen w-dvw h-dvh md:w-auto md:h-auto md:rounded-3xl bg-black z-20 overflow-hidden relative grid place-items-center`}
         >
           <button
             className="absolute top-4 right-4 cursor-pointer bg-white rounded-full p-2 hover:bg-slate-100 z-[21]"
